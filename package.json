@@ -1,0 +1,29 @@
+{
+  "name": "coworkingspace",
+  "version": "1.0.0",
+  "description": "The server and client for my coworking space booking app",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/remcqueen1999/coworkingSpace.git"
+  },
+  "keywords": [
+    "node",
+    "js",
+    "react",
+    "exporess",
+    "mongodb"
+  ],
+  "author": "Reuben Elijah McQueen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/remcqueen1999/coworkingSpace/issues"
+  },
+  "homepage": "https://github.com/remcqueen1999/coworkingSpace#readme",
+  "dependencies": {
+    "heroku": "^7.24.1"
+  }
+}
