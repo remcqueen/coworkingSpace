@@ -4,7 +4,7 @@
   "description": "This is the repository for my placement at EagleLabs newcastle",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon",
+    "start": "node index.js",
     "test": "jest --watchAll --verbose"
   },
   "repository": {
