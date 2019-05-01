@@ -4,6 +4,7 @@
   "description": "The server and client for my coworking space booking app",
   "main": "index.js",
   "scripts": {
+    "postinstall": "npm install --prefix server && npm install --prefix client",
     "test": "npm test"
   },
   "repository": {
