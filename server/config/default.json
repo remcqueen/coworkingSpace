@@ -1,0 +1,7 @@
+{
+  "jwtPrivateKey": "",
+  "db": "mongodb://localhost/sharespace",
+  "port": "3900",
+  "requiresAuth": false,
+  "useLocal": true
+}

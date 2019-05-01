@@ -1,0 +1,44 @@
+{
+  "name": "sharespace",
+  "version": "1.0.0",
+  "description": "This is the repository for my placement at EagleLabs newcastle",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --watchAll --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/remcqueen1999/EagleLabs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/remcqueen1999/EagleLabs/issues"
+  },
+  "homepage": "https://github.com/remcqueen1999/EagleLabs#readme",
+  "dependencies": {
+    "bcrypt": "^3.0.6",
+    "config": "^3.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "express-async-errors": "^3.1.1",
+    "fawn": "^2.1.5",
+    "joi": "^14.3.1",
+    "joi-objectid": "^2.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.11",
+    "mongoose": "^5.5.5",
+    "mpath": "^0.5.2",
+    "node-fetch": "^2.5.0",
+    "nodemon": "^1.19.0",
+    "supertest": "^4.0.2"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.17.2",
+    "jest": "^24.7.1"
+  }
+}
