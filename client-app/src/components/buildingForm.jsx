@@ -77,7 +77,7 @@ class BuildingForm extends Form {
     try {
       const prediction = await getAddress(data);
       console.log(prediction);
-      if (prediction.status === "OK") {
+      if (prediction.status === "OK" || "ZERO_RESULTS") {
         const result = prediction.candidates[0];
         const name = result.name;
         let address = result.formatted_address;

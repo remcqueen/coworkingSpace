@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "postinstall": "npm install --prefix server && npm install --prefix client-app",
+    "start": "npm start --prefix server",
     "test": "npm test"
   },
   "repository": {
