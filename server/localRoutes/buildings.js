@@ -51,7 +51,6 @@ router.put('/:id', [auth], (req, res) => {
       name: organisation.name,
     },
   };
-  console.log(building);
   building = Building.updateBuilding(building);
 
   if (!building) return res.status(404).send('The building with the given ID was not found.');

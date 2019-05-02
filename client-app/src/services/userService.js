@@ -3,6 +3,7 @@ import { apiUrl } from "../config.json";
 const apiEndpoint = `${apiUrl}/users`;
 
 export function register(user) {
+  console.log(JSON.stringify(user));
   return fetch(apiEndpoint, {
     method: "POST",
     headers: {
