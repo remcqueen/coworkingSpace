@@ -153,7 +153,7 @@ class RoomBooking extends Component {
 
     return (
       <div className="row ">
-        <div className="col-3">
+        <div className="col">
           <ListGroup
             items={this.state.roomTypes}
             selectedItem={this.state.selectedRoomType}

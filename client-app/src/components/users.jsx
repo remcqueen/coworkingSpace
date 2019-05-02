@@ -75,7 +75,7 @@ class Users extends Component {
 
     return (
       <div className="row">
-        <div className="col-3">
+        <div className="col">
           <ListGroup
             items={this.state.businesses}
             selectedItem={this.state.selectedBusiness}

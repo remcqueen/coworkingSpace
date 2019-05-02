@@ -1,36 +1,38 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import UsersTable from "./usersTable";
+import { toast } from "react-toastify";
+import BuildingsTable from "./buildingsTable";
 import ListGroup from "./common/listGroup";
 import Pagination from "./common/pagination";
-import { getUsers } from "../services/userService";
-import { getBusinesses } from "../services/businessService";
-import auth from "../services/authService";
+import { getBuildings, deleteBuilding } from "../services/buildingService";
+import { getOrganisations } from "../services/organisationService";
 import { paginate } from "../utils/paginate";
 import _ from "lodash";
+import SearchBox from "./searchBox";
 
-class Users extends Component {
+class Buildings extends Component {
   state = {
-    users: [],
-    businesses: [],
+    buildings: [],
+    organisations: [],
     currentPage: 1,
     pageSize: 4,
     searchQuery: "",
-    selectedBusiness: null,
+    selectedOrganisation: null,
     sortColumn: { path: "name", order: "asc" }
   };
 
   async componentDidMount() {
-    const buildingId = this.props.match.params.id;
-    const selectedBusiness = { _id: "", name: "All Businesses" };
     try {
-      const data = await getBusinesses(buildingId);
-      const businesses = [selectedBusiness, ...data];
-
-      const users = await getUsers(buildingId);
-      this.setState({ users, businesses, selectedBusiness });
+      const data = await getOrganisations();
+      if (!data) {
+        return;
+      }
+      const selectedOrganisation = { _id: "", name: "All Organisations" };
+      const organisations = [selectedOrganisation, ...data];
+      const buildings = await getBuildings();
+      this.setState({ buildings, organisations, selectedOrganisation });
     } catch (error) {
-      this.props.history.replace("/notFound");
+      toast.error("Network Error");
     }
   }
 
@@ -38,10 +40,18 @@ class Users extends Component {
     this.setState({ currentPage: page });
   };
 
-  handleBusinessSelect = business => {
+  handleOrganisationSelect = organisation => {
     this.setState({
-      selectedBusiness: business,
+      selectedOrganisation: organisation,
       searchQuery: "",
+      currentPage: 1
+    });
+  };
+
+  handleSearch = query => {
+    this.setState({
+      searchQuery: query,
+      selectedOrganisation: null,
       currentPage: 1
     });
   };
@@ -50,46 +60,85 @@ class Users extends Component {
     this.setState({ sortColumn });
   };
 
+  handleDelete = async building => {
+    const originalBuildings = this.state.buildings;
+    const buildings = originalBuildings.filter(b => b._id !== building._id);
+    this.setState({ buildings });
+
+    try {
+      await deleteBuilding(building._id);
+    } catch (ex) {
+      if (ex.response && ex.response.status === 404)
+        toast.error("This building has already been deleted.");
+
+      this.setState({ buildings: originalBuildings });
+    }
+  };
+
   getPagedData = () => {
     const {
       pageSize,
       currentPage,
       sortColumn,
-      selectedBusiness,
-      users: allUsers
+      selectedOrganisation,
+      searchQuery,
+      buildings: allBuildings
     } = this.state;
 
-    let filtered = allUsers;
-    if (selectedBusiness && selectedBusiness._id)
-      filtered = allUsers.filter(m => m.business._id === selectedBusiness._id);
+    let filtered = allBuildings;
+    if (searchQuery)
+      filtered = allBuildings.filter(b =>
+        b.name.toLowerCase().startsWith(searchQuery.toLowerCase())
+      );
+    else if (selectedOrganisation && selectedOrganisation._id)
+      filtered = allBuildings.filter(
+        m => m.organisation._id === selectedOrganisation._id
+      );
 
     const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
-    const users = paginate(sorted, currentPage, pageSize);
-    return { totalCount: filtered.length, data: users };
+
+    const buildings = paginate(sorted, currentPage, pageSize);
+
+    return { totalCount: filtered.length, data: buildings };
   };
 
   render() {
-    const { pageSize, currentPage, sortColumn } = this.state;
-    const { totalCount, data: users } = this.getPagedData();
-    const user = auth.getCurrentUser();
+    const { pageSize, currentPage, sortColumn, searchQuery } = this.state;
+    const { user } = this.props;
+
+    const { totalCount, data: buildings } = this.getPagedData();
 
     return (
       <div className="row">
         <div className="col">
           {user && user.isAdmin && (
-            <Link
-              to={`/businesses/${this.props.match.params.id}`}
-              className="btn btn-primary"
-              style={{ marginBottom: 20 }}
-            >
-              New Business
-            </Link>
+            <React.Fragment>
+              <Link to="/buildings/new" className="btn btn-primary topButton">
+                New Building
+              </Link>
+              <Link
+                to="/organisations/new"
+                className="btn btn-primary topButton"
+              >
+                New Organisation
+              </Link>
+            </React.Fragment>
           )}
-          <p>Showing {totalCount} users in the database.</p>
-          <UsersTable
-            users={users}
+          {<p>Showing {totalCount} buildings in the database.</p>}
+
+          <ListGroup
+            items={this.state.organisations}
+            selectedItem={this.state.selectedOrganisation}
+            onItemSelect={this.handleOrganisationSelect}
+          />
+        </div>
+        <div className="col">
+          <SearchBox value={searchQuery} onChange={this.handleSearch} />
+          <BuildingsTable
+            buildings={buildings}
             sortColumn={sortColumn}
             onSort={this.handleSort}
+            onDelete={this.handleDelete}
           />
           <Pagination
             itemsCount={totalCount}
@@ -98,16 +147,9 @@ class Users extends Component {
             onPageChange={this.handlePageChange}
           />
         </div>
-        <div className="col">
-          <ListGroup
-            items={this.state.businesses}
-            selectedItem={this.state.selectedBusiness}
-            onItemSelect={this.handleBusinessSelect}
-          />
-        </div>
       </div>
     );
   }
 }
 
-export default Users;
+export default Buildings;
