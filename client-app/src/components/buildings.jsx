@@ -1,36 +1,46 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import Calendar from "react-calendar";
 import { toast } from "react-toastify";
-import BuildingsTable from "./buildingsTable";
-import ListGroup from "./common/listGroup";
-import Pagination from "./common/pagination";
-import { getBuildings, deleteBuilding } from "../services/buildingService";
-import { getOrganisations } from "../services/organisationService";
-import { paginate } from "../utils/paginate";
 import _ from "lodash";
+import RoomsTable from "./roomsTable";
+import Pagination from "./common/pagination";
+import ListGroup from "./common/listGroup";
+import { getRoomFrom, deleteRoom } from "../services/roomService";
+import { getRoomTypes } from "../services/roomTypeService";
+import { makeBooking } from "../services/bookingService";
+import { paginate } from "../utils/paginate";
+import auth from "../services/authService";
 import SearchBox from "./searchBox";
+import { getBuildingFrom } from "../services/buildingService";
 
-class Buildings extends Component {
+class RoomBooking extends Component {
   state = {
-    buildings: [],
-    organisations: [],
+    rooms: [],
+    roomTypes: [],
     currentPage: 1,
     pageSize: 4,
     searchQuery: "",
-    selectedOrganisation: null,
-    sortColumn: { path: "name", order: "asc" }
+    selectedRoomType: null,
+    date: null,
+    sortColumn: { path: "name", order: "asc" },
+    user: null,
+    building: null
   };
 
   async componentDidMount() {
+    const user = auth.getCurrentUser();
+    if (!user) {
+      return;
+    }
     try {
-      const data = await getOrganisations();
-      if (!data) {
-        return;
-      }
-      const selectedOrganisation = { _id: "", name: "All Organisations" };
-      const organisations = [selectedOrganisation, ...data];
-      const buildings = await getBuildings();
-      this.setState({ buildings, organisations, selectedOrganisation });
+      const building = await getBuildingFrom(user.businessId);
+      const data = await getRoomTypes();
+      const selectedRoomType = { _id: "", name: "All Room Types" };
+      const roomTypes = [selectedRoomType, ...data];
+
+      const rooms = await getRoomFrom(building._id);
+      this.setState({ rooms, roomTypes, user, building, selectedRoomType });
     } catch (error) {
       toast.error("Network Error");
     }
@@ -40,9 +50,9 @@ class Buildings extends Component {
     this.setState({ currentPage: page });
   };
 
-  handleOrganisationSelect = organisation => {
+  handleRoomTypeSelect = roomType => {
     this.setState({
-      selectedOrganisation: organisation,
+      selectedRoomType: roomType,
       searchQuery: "",
       currentPage: 1
     });
@@ -56,22 +66,53 @@ class Buildings extends Component {
     });
   };
 
+  handleDateChange = date => {
+    this.setState({ date });
+  };
+
   handleSort = sortColumn => {
     this.setState({ sortColumn });
   };
 
-  handleDelete = async building => {
-    const originalBuildings = this.state.buildings;
-    const buildings = originalBuildings.filter(b => b._id !== building._id);
-    this.setState({ buildings });
+  handleRoomBook = async room => {
+    const { user, date, building } = this.state;
+    if (!date) {
+      return toast.error("Please select a date to book the room.");
+    }
+    const year = date.getFullYear();
+    let month = 1 + date.getMonth();
+    month = month > 9 ? month : "0" + month;
+    let day = date.getDate();
+    day = day > 9 ? day : "0" + day;
+    const standardDate = year + "-" + month + "-" + day;
+
+    const data = {
+      userId: user._id,
+      roomId: room._id,
+      buildingId: building._id,
+      date: standardDate
+    };
 
     try {
-      await deleteBuilding(building._id);
+      await makeBooking(data);
+      return toast("Booking successfuly made");
+    } catch (ex) {
+      return toast.error("This room could not be booked on this date");
+    }
+  };
+
+  handleDelete = async room => {
+    const originalRooms = this.state.rooms;
+    const rooms = originalRooms.filter(r => r._id !== room._id);
+    this.setState({ rooms });
+
+    try {
+      await deleteRoom(room._id);
     } catch (ex) {
       if (ex.response && ex.response.status === 404)
-        toast.error("This building has already been deleted.");
+        toast.error("This room has already been deleted.");
 
-      this.setState({ buildings: originalBuildings });
+      this.setState({ rooms: originalRooms });
     }
   };
 
@@ -80,56 +121,55 @@ class Buildings extends Component {
       pageSize,
       currentPage,
       sortColumn,
-      selectedOrganisation,
+      selectedRoomType,
       searchQuery,
-      buildings: allBuildings
+      rooms: allRooms
     } = this.state;
 
-    let filtered = allBuildings;
+    let filtered = allRooms;
     if (searchQuery)
-      filtered = allBuildings.filter(b =>
+      filtered = allRooms.filter(b =>
         b.name.toLowerCase().startsWith(searchQuery.toLowerCase())
       );
-    else if (selectedOrganisation && selectedOrganisation._id)
-      filtered = allBuildings.filter(
-        m => m.organisation._id === selectedOrganisation._id
-      );
+    else if (selectedRoomType && selectedRoomType._id)
+      filtered = allRooms.filter(m => m.roomType._id === selectedRoomType._id);
 
     const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
 
-    const buildings = paginate(sorted, currentPage, pageSize);
+    const rooms = paginate(sorted, currentPage, pageSize);
 
-    return { totalCount: filtered.length, data: buildings };
+    return { totalCount: filtered.length, data: rooms };
   };
 
   render() {
+    const { length: count } = this.state.rooms;
     const { pageSize, currentPage, sortColumn, searchQuery } = this.state;
     const { user } = this.props;
 
-    const { totalCount, data: buildings } = this.getPagedData();
+    if (count === 0)
+      return <p>There are no rooms in the database for this building.</p>;
+
+    const { totalCount, data: rooms } = this.getPagedData();
 
     return (
-      <div className="row">
+      <div className="row ">
         <div className="col">
-          {user && user.isAdmin && (
-            <React.Fragment>
-              <Link to="/buildings/new" className="btn btn-primary topButton">
-                New Building
-              </Link>
-              <Link
-                to="/organisations/new"
-                className="btn btn-primary topButton"
-              >
-                New Organisation
-              </Link>
-            </React.Fragment>
+          {user && (
+            <Link
+              to="/buildings/new"
+              className="btn btn-primary"
+              style={{ marginBottom: 20 }}
+            >
+              New Building
+            </Link>
           )}
-          {<p>Showing {totalCount} buildings in the database.</p>}
+          <p>Showing {totalCount} buildings in the database.</p>
           <SearchBox value={searchQuery} onChange={this.handleSearch} />
-          <BuildingsTable
-            buildings={buildings}
-            sortColumn={sortColumn}
+          <RoomsTable
+            rooms={rooms}
             onSort={this.handleSort}
+            sortColumn={sortColumn}
+            onBook={this.handleRoomBook}
             onDelete={this.handleDelete}
           />
           <Pagination
@@ -141,9 +181,15 @@ class Buildings extends Component {
         </div>
         <div className="col">
           <ListGroup
-            items={this.state.organisations}
-            selectedItem={this.state.selectedOrganisation}
-            onItemSelect={this.handleOrganisationSelect}
+            items={this.state.roomTypes}
+            selectedItem={this.state.selectedRoomType}
+            onItemSelect={this.handleRoomTypeSelect}
+          />
+          <Calendar
+            onChange={this.handleDateChange}
+            value={this.state.date}
+            minDate={new Date()}
+            calendarType="ISO 8601"
           />
         </div>
       </div>
@@ -151,4 +197,5 @@ class Buildings extends Component {
   }
 }
 
-export default Buildings;
+export default RoomBooking;
+
