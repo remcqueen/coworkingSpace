@@ -1,68 +1,49 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Co-Working Space Client documentation
 
-## Available Scripts
+Below is instructions on how to run and use the co-working space client
 
-In the project directory, you can run:
+## Idea of the web based application:
 
-### `npm start`
+The idea of this application is to simulate a business share space service, where different small business and startups can use resources provide by an organisation. They can book out rooms on a day by day.
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Entities of the service:
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+- Organisations - companies that own the buildings being used by small businesses
+- Buildings - This is the physical place that the small businesses can go in and use, each building has its own rooms and businesses within
+- Businesses - These are the small businesses that are using the working spaces
+- Users - This includes admins and business employees that can use the working space
+- Rooms - Each building has it own rooms, which can be booked out by businesses to use
+- Room Types - each room can be of a certain type, for example: a meeting room.
 
-### `npm test`
+The app can be viewed from the perspective of an Admin or a business user, admins have several privileges over users, for example:
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+**Admin Privileges:**
 
-### `npm run build`
+- Admins can add, delete and update buildings in the system, this is done through the intuitive on screen buttons. (note these can only be seen when on an admin account).
+- Admins can add new rooms to buildings, stating thing such as the type of room and capacity
+- Admins can view the bookings that have been made by users, they can also delete bookings if they wish
+- Admins can add new organisations to the service, the new organisations can then used when creating or updating a building.
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+**How to login:**
+By default there are several users already included in the system, to simulate a partially active service. **The logins for all of these users have the password: 1234** You can choose to login as these users or register a user yourself. (Please note that passwords are hashed in storage for security). An example of an admin and a business user can be seen below.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+| email              | password | isAdmin |
+| ------------------ | -------- | ------- |
+| admin@tuspark.com  | 12345678 | Yes     |
+| JWatt@codebase.com | 12345678 | No      |
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Extension: External API service
 
-### `npm run eject`
+The additional api i used for my service was googles 'Google maps autocomplete address lookup'. It is an API that acts as a predictive text search for addresses, and is used when the admin adds a new building. This is a very useful feature and I feel it adds value for two reasons:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- Acts as a form of validation on the address, as it is from googles address database
+- Much faster than manually entering the address, which may have to be looked up anyway
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+**How to use the external API:**
+When on the admin account, select "New building" on the buildings page, and the first input box is marked as the external API, enter key words into this box such as postcode, name, or street number, and the address fields will automatically be filled in with the most likely prediction.
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Extension: Heroku Upload
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+For the second extension the heroku cloud deployment can be found at the following URL:
+[https://young-headland-22806.herokuapp.com/](https://young-headland-22806.herokuapp.com/)
+the instructions for this are the same as the local deployment.

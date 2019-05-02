@@ -17,5 +17,5 @@ describe('GET /api/buildings', () => {
 describe('POST /api/buildings', () => {
   it('Should get a 400 status response from an empty body request', () => request(app)
     .post('/api/buildings')
-    .expect(400));
+    .expect(401));
 });

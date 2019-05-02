@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const config = require('config');
 const mongoose = require('mongoose');
 const Joi = require('joi');
 Joi.objectId = require('joi-objectid')(Joi);
@@ -9,26 +8,26 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 1,
-    maxlength: 255,
+    maxlength: 255
   },
   sName: {
     type: String,
     required: true,
     minlength: 1,
-    maxlength: 255,
+    maxlength: 255
   },
   email: {
     type: String,
     required: true,
     unique: true,
     minlength: 1,
-    maxlength: 255,
+    maxlength: 255
   },
   password: {
     type: String,
     required: true,
     minlength: 8,
-    maxlength: 1024,
+    maxlength: 1024
   },
   business: {
     type: new mongoose.Schema({
@@ -36,11 +35,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 1,
-        maxlength: 255,
-      },
-    }),
+        maxlength: 255
+      }
+    })
   },
-  isAdmin: Boolean,
+  isAdmin: Boolean
 });
 
 userSchema.methods.generateAuthToken = function () {
@@ -51,9 +50,9 @@ userSchema.methods.generateAuthToken = function () {
       sName: this.sName,
       email: this.email,
       isAdmin: this.isAdmin,
-      businessId: this.business._id,
+      businessId: this.business._id
     },
-    config.get('jwtPrivateKey'),
+    'PrivateKey'
   );
   return token;
 };
@@ -79,7 +78,7 @@ function validateUser(user) {
       .min(8)
       .max(255)
       .required(),
-    businessId: Joi.objectId().required(),
+    businessId: Joi.objectId().required()
   };
 
   return Joi.validate(user, schema);

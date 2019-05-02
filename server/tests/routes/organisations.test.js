@@ -15,7 +15,7 @@ describe('GET /api/organisations', () => {
 });
 
 describe('POST /api/organisations', () => {
-  it('Should get a 400 status response from an empty body request', () => request(app)
+  it('Should get a 401 status response from an unautherised post', () => request(app)
     .post('/api/organisations')
-    .expect(400));
+    .expect(401));
 });
