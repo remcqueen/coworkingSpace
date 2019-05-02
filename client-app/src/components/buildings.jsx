@@ -1,48 +1,36 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import Calendar from "react-calendar";
-import { toast } from "react-toastify";
-import _ from "lodash";
-import RoomsTable from "./roomsTable";
-import Pagination from "./common/pagination";
+import UsersTable from "./usersTable";
 import ListGroup from "./common/listGroup";
-import { getRoomFrom, deleteRoom } from "../services/roomService";
-import { getRoomTypes } from "../services/roomTypeService";
-import { makeBooking } from "../services/bookingService";
-import { paginate } from "../utils/paginate";
+import Pagination from "./common/pagination";
+import { getUsers } from "../services/userService";
+import { getBusinesses } from "../services/businessService";
 import auth from "../services/authService";
-import SearchBox from "./searchBox";
-import { getBuildingFrom } from "../services/buildingService";
+import { paginate } from "../utils/paginate";
+import _ from "lodash";
 
-class RoomBooking extends Component {
+class Users extends Component {
   state = {
-    rooms: [],
-    roomTypes: [],
+    users: [],
+    businesses: [],
     currentPage: 1,
     pageSize: 4,
     searchQuery: "",
-    selectedRoomType: null,
-    date: null,
-    sortColumn: { path: "name", order: "asc" },
-    user: null,
-    building: null
+    selectedBusiness: null,
+    sortColumn: { path: "name", order: "asc" }
   };
 
   async componentDidMount() {
-    const user = auth.getCurrentUser();
-    if (!user) {
-      return;
-    }
+    const buildingId = this.props.match.params.id;
+    const selectedBusiness = { _id: "", name: "All Businesses" };
     try {
-      const building = await getBuildingFrom(user.businessId);
-      const data = await getRoomTypes();
-      const selectedRoomType = { _id: "", name: "All Room Types" };
-      const roomTypes = [selectedRoomType, ...data];
+      const data = await getBusinesses(buildingId);
+      const businesses = [selectedBusiness, ...data];
 
-      const rooms = await getRoomFrom(building._id);
-      this.setState({ rooms, roomTypes, user, building, selectedRoomType });
+      const users = await getUsers(buildingId);
+      this.setState({ users, businesses, selectedBusiness });
     } catch (error) {
-      toast.error("Network Error");
+      this.props.history.replace("/notFound");
     }
   }
 
@@ -50,70 +38,16 @@ class RoomBooking extends Component {
     this.setState({ currentPage: page });
   };
 
-  handleRoomTypeSelect = roomType => {
+  handleBusinessSelect = business => {
     this.setState({
-      selectedRoomType: roomType,
+      selectedBusiness: business,
       searchQuery: "",
       currentPage: 1
     });
   };
 
-  handleSearch = query => {
-    this.setState({
-      searchQuery: query,
-      selectedOrganisation: null,
-      currentPage: 1
-    });
-  };
-
-  handleDateChange = date => {
-    this.setState({ date });
-  };
-
   handleSort = sortColumn => {
     this.setState({ sortColumn });
-  };
-
-  handleRoomBook = async room => {
-    const { user, date, building } = this.state;
-    if (!date) {
-      return toast.error("Please select a date to book the room.");
-    }
-    const year = date.getFullYear();
-    let month = 1 + date.getMonth();
-    month = month > 9 ? month : "0" + month;
-    let day = date.getDate();
-    day = day > 9 ? day : "0" + day;
-    const standardDate = year + "-" + month + "-" + day;
-
-    const data = {
-      userId: user._id,
-      roomId: room._id,
-      buildingId: building._id,
-      date: standardDate
-    };
-
-    try {
-      await makeBooking(data);
-      return toast("Booking successfuly made");
-    } catch (ex) {
-      return toast.error("This room could not be booked on this date");
-    }
-  };
-
-  handleDelete = async room => {
-    const originalRooms = this.state.rooms;
-    const rooms = originalRooms.filter(r => r._id !== room._id);
-    this.setState({ rooms });
-
-    try {
-      await deleteRoom(room._id);
-    } catch (ex) {
-      if (ex.response && ex.response.status === 404)
-        toast.error("This room has already been deleted.");
-
-      this.setState({ rooms: originalRooms });
-    }
   };
 
   getPagedData = () => {
@@ -121,56 +55,41 @@ class RoomBooking extends Component {
       pageSize,
       currentPage,
       sortColumn,
-      selectedRoomType,
-      searchQuery,
-      rooms: allRooms
+      selectedBusiness,
+      users: allUsers
     } = this.state;
 
-    let filtered = allRooms;
-    if (searchQuery)
-      filtered = allRooms.filter(b =>
-        b.name.toLowerCase().startsWith(searchQuery.toLowerCase())
-      );
-    else if (selectedRoomType && selectedRoomType._id)
-      filtered = allRooms.filter(m => m.roomType._id === selectedRoomType._id);
+    let filtered = allUsers;
+    if (selectedBusiness && selectedBusiness._id)
+      filtered = allUsers.filter(m => m.business._id === selectedBusiness._id);
 
     const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
-
-    const rooms = paginate(sorted, currentPage, pageSize);
-
-    return { totalCount: filtered.length, data: rooms };
+    const users = paginate(sorted, currentPage, pageSize);
+    return { totalCount: filtered.length, data: users };
   };
 
   render() {
-    const { length: count } = this.state.rooms;
-    const { pageSize, currentPage, sortColumn, searchQuery } = this.state;
-    const { user } = this.props;
-
-    if (count === 0)
-      return <p>There are no rooms in the database for this building.</p>;
-
-    const { totalCount, data: rooms } = this.getPagedData();
+    const { pageSize, currentPage, sortColumn } = this.state;
+    const { totalCount, data: users } = this.getPagedData();
+    const user = auth.getCurrentUser();
 
     return (
-      <div className="row ">
+      <div className="row">
         <div className="col">
-          {user && (
+          {user && user.isAdmin && (
             <Link
-              to="/buildings/new"
+              to={`/businesses/${this.props.match.params.id}`}
               className="btn btn-primary"
               style={{ marginBottom: 20 }}
             >
-              New Building
+              New Business
             </Link>
           )}
-          <p>Showing {totalCount} buildings in the database.</p>
-          <SearchBox value={searchQuery} onChange={this.handleSearch} />
-          <RoomsTable
-            rooms={rooms}
-            onSort={this.handleSort}
+          <p>Showing {totalCount} users in the database.</p>
+          <UsersTable
+            users={users}
             sortColumn={sortColumn}
-            onBook={this.handleRoomBook}
-            onDelete={this.handleDelete}
+            onSort={this.handleSort}
           />
           <Pagination
             itemsCount={totalCount}
@@ -181,15 +100,9 @@ class RoomBooking extends Component {
         </div>
         <div className="col">
           <ListGroup
-            items={this.state.roomTypes}
-            selectedItem={this.state.selectedRoomType}
-            onItemSelect={this.handleRoomTypeSelect}
-          />
-          <Calendar
-            onChange={this.handleDateChange}
-            value={this.state.date}
-            minDate={new Date()}
-            calendarType="ISO 8601"
+            items={this.state.businesses}
+            selectedItem={this.state.selectedBusiness}
+            onItemSelect={this.handleBusinessSelect}
           />
         </div>
       </div>
@@ -197,5 +110,4 @@ class RoomBooking extends Component {
   }
 }
 
-export default RoomBooking;
-
+export default Users;
