@@ -112,14 +112,7 @@ class Bookings extends Component {
     const { totalCount, data: bookings } = this.getPagedData();
     return (
       <div className="row">
-        <div className="col-3">
-          <ListGroup
-            items={this.state.buildings}
-            selectedItem={this.state.selectedBuilding}
-            onItemSelect={this.handleBuildingSelect}
-          />
-        </div>
-        <div className="col">
+      <div className="col">
           <BookingsTable
             bookings={bookings}
             onSort={this.handleSort}
@@ -133,6 +126,14 @@ class Bookings extends Component {
             onPageChange={this.handlePageChange}
           />
         </div>
+        <div className="col">
+          <ListGroup
+            items={this.state.buildings}
+            selectedItem={this.state.selectedBuilding}
+            onItemSelect={this.handleBuildingSelect}
+          />
+        </div>
+        
       </div>
     );
   }
