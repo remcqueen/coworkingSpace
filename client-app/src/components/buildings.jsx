@@ -110,13 +110,6 @@ class Buildings extends Component {
 
     return (
       <div className="row">
-        <div className="col-3">
-          <ListGroup
-            items={this.state.organisations}
-            selectedItem={this.state.selectedOrganisation}
-            onItemSelect={this.handleOrganisationSelect}
-          />
-        </div>
         <div className="col">
           {user && user.isAdmin && (
             <React.Fragment>
@@ -144,6 +137,13 @@ class Buildings extends Component {
             pageSize={pageSize}
             currentPage={currentPage}
             onPageChange={this.handlePageChange}
+          />
+        </div>
+        <div className="col">
+          <ListGroup
+            items={this.state.organisations}
+            selectedItem={this.state.selectedOrganisation}
+            onItemSelect={this.handleOrganisationSelect}
           />
         </div>
       </div>
