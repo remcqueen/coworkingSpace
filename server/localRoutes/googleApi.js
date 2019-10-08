@@ -3,7 +3,7 @@ const express = require('express');
 
 const apiEndpointA = 'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=';
 const apiEndpointB = '&inputtype=textquery&fields=formatted_address,name&key=';
-const apiKey = 'AIzaSyDdbgPgX_VHFdVGbmj4hUa3NWTI2ls46EQ';
+const apiKey = 'your_API_key_here';
 
 const router = express.Router();
 
